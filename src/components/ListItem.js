@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {
   Text,
   TouchableWithoutFeedback,
@@ -7,7 +7,7 @@ import {
   Platform,
   UIManager,
 } from 'react-native';
-import {connect} from 'react-redux';
+import {connect, useDispatch, useSelector} from 'react-redux';
 import {CardSection} from './common';
 import * as actions from '../actions/index';
 
@@ -19,11 +19,20 @@ if (
 }
 
 const ListItem = (props) => {
-  const renderDescription = () => {
-    const {library, expanded} = props;
-    console.log('expanded', expanded);
+  const {titleStyle} = styles;
+  const {id, title} = props.library.item;
 
-    if (expanded) {
+  const dispatch = useDispatch();
+
+  const getId = useCallback(() => {
+    dispatch(actions.selectLibrary1(id));
+  }, [dispatch, id]);
+
+  const renderDescription = () => {
+    const {library} = props;
+    const courseId = useSelector((state) => state.selectedLibraryId);
+
+    if (id === courseId) {
       LayoutAnimation.spring();
       return (
         <CardSection>
@@ -33,14 +42,8 @@ const ListItem = (props) => {
     }
   };
 
-  const {titleStyle} = styles;
-  const {id, title} = props.library.item;
-
   return (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        props.selectLibrary1(id);
-      }}>
+    <TouchableWithoutFeedback onPress={getId}>
       <View>
         <CardSection>
           <Text style={titleStyle}>{title}</Text>
@@ -62,8 +65,4 @@ const styles = {
   },
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const expanded = state.selectedLibraryId === ownProps.library.item.id;
-  return {expanded};
-};
-export default connect(mapStateToProps, actions)(ListItem);
+export default ListItem;
